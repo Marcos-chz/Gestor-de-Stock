@@ -1,0 +1,24 @@
+# Node modules
+backend/node_modules/
+frontend/node_modules/
+
+# Builds
+backend/backend.exe
+frontend/dist/
+frontend/release/
+
+# Base de datos
+backend/stock.db
+backend/backups/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db
