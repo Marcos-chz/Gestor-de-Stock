@@ -344,7 +344,7 @@ export default function Ventas() {
 
   // ==================== RENDER ====================
   return (
-    <div className="container-fluid py-4 px-4 bg-white" style={{ minHeight: "100vh" }}>
+    <div className="container-fluid py-5 px-5 bg-white" style={{ minHeight: "100vh" }}>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
         <h2 className="fw-bold text-dark mb-0">

@@ -14,7 +14,7 @@ export default function Sidebar() {
     <div 
       className="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100" 
       style={{ 
-        width: "240px", 
+        width: "200px", 
         position: "fixed", 
         left: 0, 
         top: 0,

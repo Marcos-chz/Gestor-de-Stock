@@ -11,10 +11,17 @@ import HistorialVentas from './pages/historialVentas';
 
 function AppContent() {
   const location = useLocation();
+  const sidebarWidth = 200;
+
   return (
     <div className="d-flex">
       <Sidebar />
-      <div className="flex-grow-1" style={{ marginLeft: "100px", padding: "20px" }}>
+      <div style={{ 
+        marginLeft: `${sidebarWidth}px`,
+        width: `calc(100% - ${sidebarWidth}px)`,
+        minHeight: "100vh",
+        backgroundColor: "#f8f9fa"
+      }}>
         <Routes>
           <Route path="/" element={<Dashboard key={location.pathname} />} />
           <Route path="/productos" element={<Productos />} />

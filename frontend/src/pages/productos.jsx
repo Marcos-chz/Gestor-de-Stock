@@ -71,13 +71,12 @@ export default function Productos() {
         }
     };
 
-    // Filtrar talles según tipo
+    // Filtrar talles según tipo seleccionado
     const filteredSizes = sizes.filter(size => {
-        if (sizeType === 'clothing') {
-            return ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].includes(size.name);
-        } else {
-            return !isNaN(size.name) || ['35','36','37','38','39','40','41','42','43','44','45'].includes(size.name);
-        }
+        if (sizeType === 'clothing') return size.type === 'clothing';
+        if (sizeType === 'footwear') return size.type === 'footwear';
+        if (sizeType === 'pants') return size.type === 'pants';
+        return true;
     });
 
     const openModal = () => {
@@ -256,7 +255,7 @@ export default function Productos() {
     });
 
     return (
-        <div className="container-fluid py-4 px-4 bg-white" style={{ minHeight: "100vh" }}>
+        <div className="container-fluid py-5 px-5 bg-white" style={{ minHeight: "100vh" }}>
             <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
                 <h2 className="fw-bold text-dark mb-0">
                     <i className="bi bi-box-seam text-primary me-2 fs-3"></i>
@@ -544,18 +543,25 @@ export default function Productos() {
                                                     </label>
                                                     <div className="btn-group btn-group-sm">
                                                         <button
-                                                            type="button"
-                                                            className={`btn ${sizeType === 'clothing' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                                                            onClick={() => setSizeType('clothing')}
+                                                        type="button"
+                                                        className={`btn ${sizeType === 'clothing' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                        onClick={() => setSizeType('clothing')}
                                                         >
-                                                            Ropa
+                                                        Ropa
                                                         </button>
                                                         <button
-                                                            type="button"
-                                                            className={`btn ${sizeType === 'footwear' ? 'btn-primary' : 'btn-outline-secondary'}`}
-                                                            onClick={() => setSizeType('footwear')}
+                                                        type="button"
+                                                        className={`btn ${sizeType === 'footwear' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                        onClick={() => setSizeType('footwear')}
                                                         >
-                                                            Calzado
+                                                        Calzado
+                                                        </button>
+                                                        <button
+                                                        type="button"
+                                                        className={`btn ${sizeType === 'pants' ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                        onClick={() => setSizeType('pants')}
+                                                        >
+                                                        Pantalón
                                                         </button>
                                                     </div>
                                                 </div>
@@ -605,7 +611,7 @@ export default function Productos() {
                 </div>
             )}
 
-            {/* MODAL UPDATE */}
+           {/* MODAL UPDATE */}
             {modalUpdate && editData && (
                 <div className="modal fade show d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
                     <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -736,19 +742,43 @@ export default function Productos() {
                                             </div>
 
                                             <div>
-                                                <label className="form-label text-secondary small fw-medium">Talle</label>
-                                                <select
-                                                    className="form-select"
-                                                    value={editData.size}
-                                                    onChange={(e) =>
-                                                        setEditData({ ...editData, size: e.target.value })
-                                                    }
-                                                >
-                                                    <option value="">Sin especificar</option>
-                                                    {sizes.map(size => (
-                                                        <option key={size.id} value={size.id}>{size.name}</option>
-                                                    ))}
-                                                </select>
+                                                <label className="form-label text-secondary small fw-medium mb-2">Talle</label>
+                                                
+                                                {/* Primero, obtenemos el tipo del talle actual */}
+                                                {(() => {
+                                                    const talleActual = sizes.find(s => s.id === Number(editData.size));
+                                                    const tipoTalle = talleActual?.type || 'clothing';
+                                                    
+                                                    return (
+                                                        <>
+                                                            <div className="mb-2">
+                                                                <span className="badge bg-light text-dark border px-3 py-2">
+                                                                    Tipo: {
+                                                                        tipoTalle === 'clothing' ? 'Ropa' :
+                                                                        tipoTalle === 'footwear' ? 'Calzado' :
+                                                                        'Pantalón'
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                            <select
+                                                                className="form-select"
+                                                                value={editData.size}
+                                                                onChange={(e) =>
+                                                                    setEditData({ ...editData, size: e.target.value })
+                                                                }
+                                                            >
+                                                                <option value="">Sin especificar</option>
+                                                                {sizes
+                                                                    .filter(size => size.type === tipoTalle)
+                                                                    .map(size => (
+                                                                        <option key={size.id} value={size.id}>
+                                                                            {size.name}
+                                                                        </option>
+                                                                    ))}
+                                                            </select>
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
 
                                             <div>
