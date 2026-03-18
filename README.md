@@ -34,3 +34,16 @@ cd ..
 
 # Iniciar app
 npm run electron:dev
+
+# Produccion
+npm run electron:build
+```
+
+### Uso
+La base de datos se crea automaticamente en %APPDATA%/GestorStock/
+El backend corre en http://localhost:3000
+
+### Autor
+Marcos Chavez
+
+
