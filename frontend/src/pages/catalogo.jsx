@@ -12,26 +12,23 @@ export default function AdministrarCatalogo() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [activeTab, sizeType]);
 
   const loadData = async () => {
     try {
-      const [catRes, sizeRes, colRes, seaRes] = await Promise.all([
-        fetch('http://localhost:3000/categories'),
-        fetch('http://localhost:3000/sizes'),
-        fetch('http://localhost:3000/colors'),
-        fetch('http://localhost:3000/seasons')
-      ]);
-      
-      const catData = await catRes.json();
-      const sizeData = await sizeRes.json();
-      const colData = await colRes.json();
-      const seaData = await seaRes.json();
-      
-      setCategories(catData);
-      setSizes(sizeData);
-      setColors(colData);
-      setSeasons(seaData);
+      if (activeTab === 'categorias') {
+        const res = await fetch('http://localhost:3000/categories?active=1');
+        setCategories(await res.json());
+      } else if (activeTab === 'talles') {
+        const res = await fetch(`http://localhost:3000/sizes?active=1&type=${sizeType}`);
+        setSizes(await res.json());
+      } else if (activeTab === 'colores') {
+        const res = await fetch('http://localhost:3000/colors?active=1');
+        setColors(await res.json());
+      } else if (activeTab === 'temporadas') {
+        const res = await fetch('http://localhost:3000/seasons?active=1');
+        setSeasons(await res.json());
+      }
     } catch (error) {
       console.error('❌ Error:', error);
     }
@@ -46,7 +43,6 @@ export default function AdministrarCatalogo() {
     if (activeTab === 'talles') {
       url = 'http://localhost:3000/sizes';
       body = { name: newName, type: sizeType };
-      console.log('📤 Enviando talle:', body);
     } else if (activeTab === 'categorias') {
       url = 'http://localhost:3000/categories';
     } else if (activeTab === 'colores') {
@@ -64,7 +60,6 @@ export default function AdministrarCatalogo() {
       
       if (!res.ok) {
         const error = await res.json();
-        console.error('Error del servidor:', error);
         alert(`Error: ${error.error || 'No se pudo guardar'}`);
         return;
       }
@@ -77,22 +72,23 @@ export default function AdministrarCatalogo() {
     }
   };
 
+  // "Eliminar" = desactivar (soft delete)
   const deleteItem = async (id) => {
     if (!confirm('¿Estás seguro de eliminar este elemento?')) return;
     
     let url = '';
     if (activeTab === 'talles') {
-      url = `http://localhost:3000/sizes/${id}`;
+      url = `http://localhost:3000/sizes/${id}/deactivate`;
     } else if (activeTab === 'categorias') {
-      url = `http://localhost:3000/categories/${id}`;
+      url = `http://localhost:3000/categories/${id}/deactivate`;
     } else if (activeTab === 'colores') {
-      url = `http://localhost:3000/colors/${id}`;
+      url = `http://localhost:3000/colors/${id}/deactivate`;
     } else if (activeTab === 'temporadas') {
-      url = `http://localhost:3000/seasons/${id}`;
+      url = `http://localhost:3000/seasons/${id}/deactivate`;
     }
 
     try {
-      const res = await fetch(url, { method: 'DELETE' });
+      const res = await fetch(url, { method: 'PATCH' });
       
       if (!res.ok) {
         const error = await res.json();
@@ -100,24 +96,16 @@ export default function AdministrarCatalogo() {
         return;
       }
       
-      loadData();
+      loadData(); // Recargar (el elemento ya no aparece)
     } catch (error) {
       console.error('Error de red:', error);
       alert('Error de conexión con el servidor');
     }
   };
 
-  // Filtrar talles según tipo seleccionado
-  const filteredSizes = sizes.filter(size => {
-    if (sizeType === 'clothing') return size.type === 'clothing';
-    if (sizeType === 'footwear') return size.type === 'footwear';
-    if (sizeType === 'pants') return size.type === 'pants';
-    return true;
-  });
-
   return (
     <div className="container-fluid py-5 px-5 bg-white" style={{ minHeight: "100vh" }}>
-      {/* Header */}
+      {/* Header simple */}
       <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
         <h2 className="fw-bold text-dark mb-0">
           <i className="bi bi-gear-wide-connected text-primary me-2 fs-3"></i>
@@ -161,7 +149,7 @@ export default function AdministrarCatalogo() {
         </li>
       </ul>
 
-      {/* Contenido según pestaña */}
+      {/* Contenido */}
       <div className="card border-0 shadow-sm">
         <div className="card-body p-4">
           
@@ -180,9 +168,8 @@ export default function AdministrarCatalogo() {
                   className="form-control"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder={`Nombre del ${activeTab === 'categorias' ? 'categoría' : 
-                    activeTab === 'talles' ? 'talle' :
-                    activeTab === 'colores' ? 'color' : 'temporada'}`}
+                  placeholder={`Nombre...`}
+                  onKeyPress={(e) => e.key === 'Enter' && addItem()}
                 />
                 <button className="btn btn-success" onClick={addItem}>
                   <i className="bi bi-plus-lg me-2"></i>
@@ -191,110 +178,52 @@ export default function AdministrarCatalogo() {
               </div>
             </div>
             
-            {/* Selector de tipo de talle (solo en pestaña talles) */}
+            {/* Selector de tipo de talle */}
             {activeTab === 'talles' && (
               <div className="col-md-6">
                 <label className="form-label fw-semibold text-secondary mb-2">Tipo de talle</label>
                 <div className="d-flex gap-2 flex-wrap">
-                  <button
+
+                <button
                     className={`btn ${sizeType === 'clothing' ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => setSizeType('clothing')}
-                  >
-                    <i className="bi bi-person me-2"></i>
+                >
                     Ropa
-                  </button>
-                  <button
-                    className={`btn ${sizeType === 'footwear' ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => setSizeType('footwear')}
-                  >
-                    <i className="bi bi-foot me-2"></i>
-                    Calzado
-                  </button>
-                  <button
+                </button>
+
+                <button
                     className={`btn ${sizeType === 'pants' ? 'btn-primary' : 'btn-outline-primary'}`}
                     onClick={() => setSizeType('pants')}
-                  >
-                    <i className="bi bi-person-standing-dress me-2"></i>
+                >
                     Pantalón
-                  </button>
+                </button>
+
+                <button
+                    className={`btn ${sizeType === 'footwear' ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setSizeType('footwear')}
+                >
+                    Calzado
+                </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Listado de items */}
+          {/* Tabla de items */}
           <div className="table-responsive">
             <table className="table table-hover align-middle">
               <thead className="bg-light">
                 <tr>
-                  <th className="px-4 py-3 text-dark fw-semibold">Nombre</th>
-                  {activeTab === 'talles' && (
-                    <th className="py-3 text-dark fw-semibold">Tipo</th>
-                  )}
-                  <th className="py-3 text-end pe-4 text-dark fw-semibold">Acción</th>
+                  <th className="px-4 py-3">Nombre</th>
+                  {activeTab === 'talles' && <th className="py-3">Tipo</th>}
+                  <th className="py-3 text-end pe-4">Acción</th>
                 </tr>
               </thead>
               <tbody>
-                {activeTab === 'talles' ? (
-                  filteredSizes.length > 0 ? (
-                    filteredSizes.map(item => (
-                      <tr key={item.id} className="border-bottom">
-                        <td className="px-4 fw-medium text-dark">{item.name}</td>
-                        <td>
-                          <span className="text-secondary">
-                            {item.type === 'clothing' ? 'Ropa' :
-                             item.type === 'footwear' ? 'Calzado' :
-                             'Pantalón'}
-                          </span>
-                        </td>
-                        <td className="text-end pe-4">
-                          <button 
-                            className="btn btn-sm btn-outline-danger border-0"
-                            onClick={() => deleteItem(item.id)}
-                          >
-                            <i className="bi bi-trash3 fs-5"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="3" className="text-center py-4 text-secondary">
-                        <i className="bi bi-inbox fs-4 d-block mb-2"></i>
-                        No hay talles de este tipo
-                      </td>
-                    </tr>
-                  )
-                ) : (
-                  (activeTab === 'categorias' ? categories :
-                   activeTab === 'colores' ? colors :
-                   seasons).map(item => (
-                    <tr key={item.id} className="border-bottom">
-                      <td className="px-4 fw-medium text-dark">{item.name}</td>
-                      <td className="text-end pe-4">
-                        <button 
-                          className="btn btn-sm btn-outline-danger border-0"
-                          onClick={() => deleteItem(item.id)}
-                        >
-                          <i className="bi bi-trash3 fs-5"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-                
-                {activeTab !== 'talles' && (
-                  (activeTab === 'categorias' ? categories.length === 0 :
-                   activeTab === 'colores' ? colors.length === 0 :
-                   seasons.length === 0) && (
-                    <tr>
-                      <td colSpan="2" className="text-center py-4 text-secondary">
-                        <i className="bi bi-inbox fs-4 d-block mb-2"></i>
-                        No hay {activeTab} para mostrar
-                      </td>
-                    </tr>
-                  )
-                )}
+                {activeTab === 'talles' && renderSizes(sizes, deleteItem)}
+                {activeTab === 'categorias' && renderItems(categories, deleteItem)}
+                {activeTab === 'colores' && renderColors(colors, deleteItem)}
+                {activeTab === 'temporadas' && renderItems(seasons, deleteItem)}
               </tbody>
             </table>
           </div>
@@ -302,4 +231,99 @@ export default function AdministrarCatalogo() {
       </div>
     </div>
   );
+}
+
+// Funciones auxiliares para renderizar
+function renderSizes(sizes, deleteItem) {
+  if (sizes.length === 0) {
+    return (
+      <tr>
+        <td colSpan="3" className="text-center py-4 text-secondary">
+          <i className="bi bi-inbox fs-4 d-block mb-2"></i>
+          No hay talles
+        </td>
+      </tr>
+    );
+  }
+
+  return sizes.map(item => (
+    <tr key={item.id} className="border-bottom">
+      <td className="px-4 fw-medium">{item.name}</td>
+      <td>
+        <span className="badge text-dark px-3 py-2 fw-normal fs-6">
+            {item.type === 'clothing' ? 'Ropa' :
+            item.type === 'footwear' ? 'Calzado' : 'Pantalón'}
+        </span>
+      </td>
+      <td className="text-end pe-4">
+        <button 
+          className="btn btn-sm btn-outline-danger border-0"
+          onClick={() => deleteItem(item.id)}
+          title="Eliminar"
+        >
+          <i className="bi bi-trash3 fs-5"></i>
+        </button>
+      </td>
+    </tr>
+  ));
+}
+
+function renderColors(colors, deleteItem) {
+  if (colors.length === 0) {
+    return (
+      <tr>
+        <td colSpan="2" className="text-center py-4 text-secondary">
+          <i className="bi bi-inbox fs-4 d-block mb-2"></i>
+          No hay colores
+        </td>
+      </tr>
+    );
+  }
+
+  return colors.map(item => (
+    <tr key={item.id} className="border-bottom">
+      <td className="px-4 fw-medium">
+        <span className="d-flex align-items-center gap-2">
+          {item.name}
+        </span>
+      </td>
+      <td className="text-end pe-4">
+        <button 
+          className="btn btn-sm btn-outline-danger border-0"
+          onClick={() => deleteItem(item.id)}
+          title="Eliminar"
+        >
+          <i className="bi bi-trash3 fs-5"></i>
+        </button>
+      </td>
+    </tr>
+  ));
+}
+
+function renderItems(items, deleteItem) {
+  if (items.length === 0) {
+    return (
+      <tr>
+        <td colSpan="2" className="text-center py-4 text-secondary">
+          <i className="bi bi-inbox fs-4 d-block mb-2"></i>
+          No hay elementos
+        </td>
+      </tr>
+    );
+  }
+
+  return items.map(item => (
+    <tr key={item.id} className="border-bottom">
+      <td className="px-4 fw-medium">{item.name}</td>
+      <td className="text-end pe-4">
+        <button 
+          className="btn btn-sm btn-outline-danger border-0"
+          onClick={() => deleteItem(item.id)}
+          title="Eliminar"
+        >
+          <i className="bi bi-trash3 fs-5"></i>
+        </button>
+      </td>
+    </tr>
+  ));
 }

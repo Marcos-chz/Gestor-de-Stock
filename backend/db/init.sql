@@ -5,34 +5,42 @@ PRAGMA foreign_keys = ON;
 -- ======================
 CREATE TABLE categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL,
+    active INTEGER DEFAULT 1
 );
+CREATE UNIQUE INDEX idx_categories_name_active ON categories(name) WHERE active = 1;
 
 -- ======================
 -- TALLES
 -- ======================
 CREATE TABLE sizes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL,
+    type TEXT DEFAULT 'clothing',  -- 'clothing', 'footwear', 'pants'
+    active INTEGER DEFAULT 1
 );
+CREATE UNIQUE INDEX idx_sizes_name_type_active ON sizes(name, type) WHERE active = 1;
 
 -- ======================
 -- COLORES
 -- ======================
 CREATE TABLE colors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL,
+    active INTEGER DEFAULT 1
 );
-
+CREATE UNIQUE INDEX idx_colors_name_active ON colors(name) WHERE active = 1;
 
 -- ======================
 -- TEMPORADAS
 -- ======================
 CREATE TABLE seasons (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    name TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    active INTEGER DEFAULT 1
 );  
+CREATE UNIQUE INDEX idx_seasons_name_active ON seasons(name) WHERE active = 1;
 
 -- ======================
 -- PRODUCTOS (modelo general)
@@ -135,25 +143,44 @@ INSERT INTO categories (name) VALUES
     ('Camperas'),
     ('Accesorios');
 
--- ======================
--- TALLES DE ROPA
--- ======================
-INSERT INTO sizes (name) VALUES 
-    ('XS'),
-    ('S'),
-    ('M'),
-    ('L'),
-    ('XL'),
-    ('XXL'),
-    ('Único');
+-- Talles de ropa
+INSERT INTO sizes (name, type) VALUES 
+    ('XS', 'clothing'),
+    ('S', 'clothing'),
+    ('M', 'clothing'),
+    ('L', 'clothing'),
+    ('XL', 'clothing'),
+    ('XXL', 'clothing'),
+    ('Único', 'clothing');
 
--- ======================
--- TALLES DE CALZADO (Argentina - único para todos)
--- ======================
-INSERT INTO sizes (name) VALUES 
-    ('33'), ('34'), ('35'), ('36'), ('37'), 
-    ('38'), ('39'), ('40'), ('41'), ('42'), 
-    ('43');
+-- Talles de calzado
+INSERT INTO sizes (name, type) VALUES 
+    ('33', 'footwear'),
+    ('34', 'footwear'),
+    ('35', 'footwear'),
+    ('36', 'footwear'),
+    ('37', 'footwear'),
+    ('38', 'footwear'),
+    ('39', 'footwear'),
+    ('40', 'footwear'),
+    ('41', 'footwear'),
+    ('42', 'footwear'),
+    ('43', 'footwear');
+
+-- Talles de pantalón (34 al 56 pares)
+INSERT INTO sizes (name, type) VALUES 
+    ('34', 'pants'),
+    ('36', 'pants'),
+    ('38', 'pants'),
+    ('40', 'pants'),
+    ('42', 'pants'),
+    ('44', 'pants'),
+    ('46', 'pants'),
+    ('48', 'pants'),
+    ('50', 'pants'),
+    ('52', 'pants'),
+    ('54', 'pants'),
+    ('56', 'pants');
 
 -- ======================
 -- COLORES BÁSICOS

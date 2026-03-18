@@ -280,7 +280,7 @@ export default function Ventas() {
         </head>
         <body>
           <div class="header">
-            <h2>TU PRENDA IDEAL</h2>
+            <h2>TU TIENDA</h2>
             <p>${fecha}</p>
             <p>Venta #${venta.id}</p>
           </div>
